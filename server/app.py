@@ -252,28 +252,68 @@ def handle_voice_command():
         logger.error(f"Error processing command: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
+# Database status API endpoint
+@app.route('/api/db/status', methods=['GET'])
+def db_status():
+    try:
+        from database import get_nodes, get_messages, get_network_stats, get_all_preferences
+        
+        # Get counts from database
+        nodes = get_nodes(active_only=False)
+        messages_list = get_messages(since=0, limit=1000)
+        stats = get_network_stats(limit=10)
+        preferences = get_all_preferences()
+        
+        return jsonify({
+            "status": "connected",
+            "tables": {
+                "nodes": len(nodes),
+                "messages": len(messages_list),
+                "network_stats": len(stats),
+                "preferences": len(preferences),
+            },
+            "database_url": os.environ.get("DATABASE_URL", "").split("@")[-1] if os.environ.get("DATABASE_URL") else "Not configured"
+        })
+    except Exception as e:
+        logger.error(f"Error getting database status: {str(e)}")
+        return jsonify({
+            "status": "error",
+            "error": str(e)
+        }), 500
+
 # Serve static frontend assets (for development/testing)
 @app.route('/', defaults={'path': 'index.html'})
 @app.route('/<path:path>')
 def serve_static(path):
-    static_dir = os.path.join(os.path.dirname(__file__), '../static')
-    if os.path.exists(static_dir):
-        return send_from_directory(static_dir, path)
-    else:
-        # If no static directory, return a simple info page
-        return jsonify({
-            "app": "MeshTalk Server",
-            "node_id": mesh_relay.node_id,
-            "endpoints": [
-                "/api/node",
-                "/api/network",
-                "/api/messages",
-                "/api/voice/process",
-                "/api/voice/transmit",
-                "/api/voice/command",
-                "/health"
-            ]
-        })
+    # First check in server/static (our main static directory for the web UI)
+    server_static_dir = os.path.join(os.path.dirname(__file__), 'static')
+    if os.path.exists(os.path.join(server_static_dir, path)):
+        return send_from_directory(server_static_dir, path)
+    
+    # Then check root static directory (might be used for other assets)
+    root_static_dir = os.path.join(os.path.dirname(__file__), '../static')
+    if os.path.exists(root_static_dir) and os.path.exists(os.path.join(root_static_dir, path)):
+        return send_from_directory(root_static_dir, path)
+    
+    # If path doesn't exist but requesting index.html, return our main index
+    if path == 'index.html' and os.path.exists(os.path.join(server_static_dir, 'index.html')):
+        return send_from_directory(server_static_dir, 'index.html')
+    
+    # If no static directories or file not found, return API info
+    return jsonify({
+        "app": "MeshTalk Server",
+        "node_id": mesh_relay.node_id,
+        "endpoints": [
+            "/api/node",
+            "/api/network",
+            "/api/messages",
+            "/api/voice/process",
+            "/api/voice/transmit",
+            "/api/voice/command",
+            "/api/db/status",
+            "/health"
+        ]
+    })
 
 if __name__ == '__main__':
     try:
