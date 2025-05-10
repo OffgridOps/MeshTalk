@@ -3,142 +3,657 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MeshTalk Web Interface</title>
+    <title>MeshTalk | Secure Mesh Communication</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary: #6200EA;
+            --primary-light: #9d46ff;
+            --primary-dark: #4b00b3;
+            --secondary: #00E676;
+            --secondary-light: #66ffa6;
+            --secondary-dark: #00b248;
+            --bg-dark: #121212;
+            --bg-card: #1E1E1E;
+            --bg-element: #2d2d2d;
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.7);
+            --text-muted: rgba(255, 255, 255, 0.5);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --glow-primary: rgba(98, 0, 234, 0.4);
+            --glow-secondary: rgba(0, 230, 118, 0.4);
+        }
+        
         body {
-            background-color: #121212;
-            color: #ffffff;
-            font-family: 'Fira Code', monospace;
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
         }
+        
+        .app-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .header {
+            padding: 2rem 0;
+            text-align: center;
+            position: relative;
+        }
+        
+        .app-logo {
+            font-weight: 700;
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+            margin-bottom: 0.25rem;
+        }
+        
+        .app-tagline {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+        
+        .nav-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+        
+        .nav-tabs {
+            background-color: var(--bg-element);
+            border-radius: 50px;
+            padding: 0.35rem;
+            border: none;
+            display: inline-flex;
+            margin: 0 auto;
+        }
+        
+        .nav-tabs .nav-link {
+            color: var(--text-secondary);
+            border: none;
+            border-radius: 50px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .nav-tabs .nav-link.active {
+            color: var(--text-primary);
+            background-color: transparent;
+        }
+        
+        .nav-tabs .nav-link:hover:not(.active) {
+            color: var(--text-primary);
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        
+        .nav-indicator {
+            position: absolute;
+            height: calc(100% - 0.7rem);
+            top: 0.35rem;
+            z-index: 0;
+            border-radius: 50px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            transition: all 0.3s ease;
+        }
+        
         .card {
-            background-color: #1F1F1F;
-            border-color: #333;
-            margin-bottom: 20px;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            margin-bottom: 2rem;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.25);
+        }
+        
         .card-header {
-            background-color: #333;
-            border-bottom: 1px solid #444;
+            background-color: var(--bg-element);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1.25rem 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
+        
+        .card-body {
+            padding: 1.5rem;
+        }
+        
+        .form-control, .form-select {
+            background-color: var(--bg-element);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            background-color: var(--bg-element);
+            border-color: var(--primary);
+            color: var(--text-primary);
+            box-shadow: 0 0 0 3px var(--glow-primary);
+        }
+        
+        .form-check-input {
+            background-color: var(--bg-element);
+            border-color: var(--border-color);
+        }
+        
+        .form-check-input:checked {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+        
+        .form-label {
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .form-switch .form-check-input {
+            width: 3em;
+            height: 1.5em;
+            margin-top: 0;
+        }
+        
+        .form-switch .form-check-input:focus {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%236200EA'/%3e%3c/svg%3e");
+        }
+        
+        .form-switch .form-check-input:checked {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e");
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
         .btn-primary {
-            background-color: #6200EA;
-            border-color: #6200EA;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border: none;
         }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--primary-light), var(--primary));
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px var(--glow-primary);
+        }
+        
         .btn-success {
-            background-color: #00E676;
-            border-color: #00E676;
+            background: linear-gradient(135deg, var(--secondary), var(--secondary-dark));
+            border: none;
         }
+        
+        .btn-success:hover {
+            background: linear-gradient(135deg, var(--secondary-light), var(--secondary));
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px var(--glow-secondary);
+        }
+        
+        .message-container {
+            height: 320px;
+            overflow-y: auto;
+            padding: 1rem;
+            background-color: rgba(0,0,0,0.1);
+            border-radius: 12px;
+            scroll-behavior: smooth;
+        }
+        
         .message-bubble {
-            padding: 10px 15px;
-            border-radius: 20px;
-            margin-bottom: 10px;
-            max-width: 80%;
+            padding: 1rem 1.25rem;
+            border-radius: 18px;
+            margin-bottom: 1rem;
+            max-width: 85%;
+            position: relative;
+            animation: fadeIn 0.3s ease;
         }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
         .message-sent {
-            background-color: #6200EA;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             margin-left: auto;
+            border-bottom-right-radius: 4px;
         }
+        
         .message-received {
-            background-color: #333;
+            background-color: var(--bg-element);
+            margin-right: auto;
+            border-bottom-left-radius: 4px;
         }
-        .mesh-node {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background-color: #6200EA;
+        
+        .message-header {
+            margin-bottom: 0.5rem;
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+        
+        .message-content {
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+        
+        .message-footer {
+            margin-top: 0.5rem;
+            font-size: 0.7rem;
+            opacity: 0.7;
+        }
+        
+        .message-time {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.7rem;
+            opacity: 0.7;
+            margin-top: 0.25rem;
+            text-align: right;
+        }
+        
+        .input-group {
+            background-color: var(--bg-element);
+            border-radius: 12px;
+            padding: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .input-group .form-control {
+            border: none;
+            background-color: transparent;
+            padding-left: 1rem;
+        }
+        
+        .input-group .btn {
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+        }
+        
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background-color: var(--bg-element);
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+        
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 5px;
-            box-shadow: 0 0 10px rgba(98, 0, 234, 0.5);
-            font-weight: bold;
+            margin: 0 auto 1rem;
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
         }
-        .mesh-node.active {
-            background-color: #00E676;
-            box-shadow: 0 0 10px rgba(0, 230, 118, 0.5);
+        
+        .stat-icon.green {
+            background: linear-gradient(135deg, var(--secondary-dark), var(--secondary));
         }
-        .mesh-node.self {
-            border: 3px solid white;
+        
+        .stat-icon.purple {
+            background: linear-gradient(135deg, #9c27b0, #e040fb);
         }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+            background: linear-gradient(135deg, #fff, #ccc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
         .mesh-container {
             position: relative;
-            height: 300px;
-            background-color: #121212;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            padding: 10px;
-            border: 1px solid #333;
+            height: 350px;
+            background-color: #0F0F1A;
+            border-radius: 16px;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
         }
-        .node-info {
-            font-size: 12px;
-            color: #aaa;
-            margin-top: 20px;
+        
+        .mesh-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at center, rgba(98, 0, 234, 0.05) 0%, transparent 70%);
+            z-index: 0;
         }
-        #record-button {
-            width: 100px;
-            height: 100px;
+        
+        .mesh-node {
+            width: 64px;
+            height: 64px;
             border-radius: 50%;
-            background-color: #6200EA;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto;
+            font-family: 'Fira Code', monospace;
+            font-weight: bold;
+            position: absolute;
+            z-index: 2;
+            box-shadow: 0 0 15px var(--glow-primary);
+            transition: all 0.3s ease;
+        }
+        
+        .mesh-node:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 25px var(--glow-primary);
+        }
+        
+        .mesh-node.active {
+            background: linear-gradient(135deg, var(--secondary), var(--secondary-dark));
+            box-shadow: 0 0 15px var(--glow-secondary);
+        }
+        
+        .mesh-node.active:hover {
+            box-shadow: 0 0 25px var(--glow-secondary);
+        }
+        
+        .mesh-node.self {
+            border: 3px solid var(--text-primary);
+            z-index: 3;
+        }
+        
+        .node-details {
+            background-color: rgba(30, 30, 30, 0.95);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-top: 1rem;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .detail-title {
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .detail-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
             cursor: pointer;
-            transition: all 0.2s;
+            font-size: 1.25rem;
+            padding: 0;
+            transition: color 0.3s ease;
         }
-        #record-button.recording {
-            background-color: #00E676;
-            transform: scale(0.95);
+        
+        .detail-close:hover {
+            color: var(--text-primary);
         }
+        
+        .detail-row {
+            display: flex;
+            margin-bottom: 0.75rem;
+        }
+        
+        .detail-label {
+            width: 100px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        
+        .detail-value {
+            flex: 1;
+            font-family: 'Fira Code', monospace;
+        }
+        
+        .detail-value .badge {
+            padding: 0.35em 0.65em;
+            font-weight: 500;
+        }
+        
+        .detail-actions {
+            display: flex;
+            margin-top: 1rem;
+            gap: 0.75rem;
+        }
+        
+        .detail-action-btn {
+            flex: 1;
+            text-align: center;
+            padding: 0.75rem;
+            border-radius: 8px;
+            background-color: var(--bg-element);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .detail-action-btn:hover {
+            background-color: var(--primary);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+        
         .visualizer {
-            height: 60px;
-            margin: 10px 0;
+            height: 80px;
+            margin: 1.5rem 0;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 3px;
         }
+        
         .visualizer-bar {
             width: 5px;
-            background-color: #6200EA;
-            margin: 0 2px;
+            border-radius: 3px 3px 0 0;
+            background: linear-gradient(to top, var(--primary), var(--secondary));
+            transition: height 0.1s ease;
+        }
+        
+        .push-to-talk {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 2rem 0;
+        }
+        
+        #record-button {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+        
+        #record-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 12px 24px var(--glow-primary);
+        }
+        
+        #record-button.recording {
+            background: linear-gradient(135deg, var(--secondary), var(--secondary-dark));
+            transform: scale(0.95);
+            box-shadow: 0 8px 16px var(--glow-secondary);
+        }
+        
+        #record-button i {
+            font-size: 2.5rem;
+            color: white;
+        }
+        
+        .talk-instruction {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+        
+        .node-info {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 1.5rem;
+            text-align: center;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
             display: inline-block;
+        }
+        
+        /* Pulse Animation */
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 var(--glow-primary); }
+            70% { box-shadow: 0 0 0 15px rgba(98, 0, 234, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(98, 0, 234, 0); }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-tabs .nav-link {
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
+            }
+            
+            .app-logo {
+                font-size: 2rem;
+            }
+            
+            .mesh-container {
+                height: 300px;
+            }
+            
+            .mesh-node {
+                width: 48px;
+                height: 48px;
+                font-size: 0.8rem;
+            }
+            
+            #record-button {
+                width: 100px;
+                height: 100px;
+            }
+            
+            #record-button i {
+                font-size: 2rem;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container py-4">
-        <h1 class="mb-4">MeshTalk</h1>
-        <p class="text-muted">A Quantum-Resistant, AI-Powered Offline Mesh Communication System</p>
+    <div class="app-container">
+        <div class="header">
+            <h1 class="app-logo">MeshTalk</h1>
+            <p class="app-tagline">Quantum-Resistant, AI-Powered Offline Mesh Communication</p>
+        </div>
         
-        <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="talk-tab" data-bs-toggle="tab" data-bs-target="#talk-tab-pane" type="button" role="tab" aria-controls="talk-tab-pane" aria-selected="true">Talk</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="chat-tab" data-bs-toggle="tab" data-bs-target="#chat-tab-pane" type="button" role="tab" aria-controls="chat-tab-pane" aria-selected="false">Chat</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="network-tab" data-bs-toggle="tab" data-bs-target="#network-tab-pane" type="button" role="tab" aria-controls="network-tab-pane" aria-selected="false">Network</button>
-            </li>
-        </ul>
+        <div class="nav-container">
+            <ul class="nav nav-tabs" id="myTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="talk-tab" data-bs-toggle="tab" data-bs-target="#talk-tab-pane" type="button" role="tab" aria-controls="talk-tab-pane" aria-selected="true">
+                        <i class="fas fa-microphone me-2"></i>Talk
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="chat-tab" data-bs-toggle="tab" data-bs-target="#chat-tab-pane" type="button" role="tab" aria-controls="chat-tab-pane" aria-selected="false">
+                        <i class="fas fa-comment-alt me-2"></i>Chat
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="network-tab" data-bs-toggle="tab" data-bs-target="#network-tab-pane" type="button" role="tab" aria-controls="network-tab-pane" aria-selected="false">
+                        <i class="fas fa-network-wired me-2"></i>Network
+                    </button>
+                </li>
+                <div class="nav-indicator"></div>
+            </ul>
+        </div>
         
         <div class="tab-content" id="myTabContent">
             <!-- Walkie Talkie Tab -->
             <div class="tab-pane fade show active" id="talk-tab-pane" role="tabpanel" aria-labelledby="talk-tab" tabindex="0">
                 <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <div>Voice Communication</div>
+                    <div class="card-header">
+                        <div><i class="fas fa-microphone me-2"></i>Voice Communication</div>
                         <div class="form-check form-switch">
                             <input class="form-check-input" type="checkbox" id="broadcastToggle" checked>
                             <label class="form-check-label" for="broadcastToggle">Broadcast Mode</label>
                         </div>
                     </div>
                     <div class="card-body">
-                        <div id="peerSelector" class="mb-3" style="display: none;">
+                        <div id="peerSelector" class="mb-4" style="display: none;">
                             <label for="peerSelect" class="form-label">Select Peer</label>
                             <select class="form-select" id="peerSelect">
                                 <option value="" disabled selected>Choose a peer...</option>
                             </select>
                         </div>
                         
-                        <div class="visualizer text-center">
+                        <div class="visualizer">
+                            <!-- 15 bars for visualization -->
                             <div class="visualizer-bar" style="height: 10%;"></div>
                             <div class="visualizer-bar" style="height: 20%;"></div>
                             <div class="visualizer-bar" style="height: 15%;"></div>
@@ -156,14 +671,17 @@
                             <div class="visualizer-bar" style="height: 5%;"></div>
                         </div>
                         
-                        <div id="record-button" class="mb-3">
-                            <i class="bi bi-mic-fill" style="font-size: 2rem;"></i>
+                        <div class="push-to-talk">
+                            <div id="record-button" class="pulse">
+                                <i class="fas fa-microphone"></i>
+                            </div>
+                            <p class="talk-instruction">Press and hold to talk</p>
                         </div>
                         
-                        <div class="text-center text-muted">Press and hold to talk</div>
-                        
-                        <div class="node-info text-center" id="nodeInfo">
-                            Node ID: Loading...
+                        <div class="d-flex justify-content-center">
+                            <div class="node-info" id="nodeInfo">
+                                <i class="fas fa-fingerprint me-2"></i>Node ID: Loading...
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -172,8 +690,8 @@
             <!-- Chat Tab -->
             <div class="tab-pane fade" id="chat-tab-pane" role="tabpanel" aria-labelledby="chat-tab" tabindex="0">
                 <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <div>Text Messages</div>
+                    <div class="card-header">
+                        <div><i class="fas fa-comment-alt me-2"></i>Text Messages</div>
                         <div class="form-check form-switch">
                             <input class="form-check-input" type="checkbox" id="chatBroadcastToggle" checked>
                             <label class="form-check-label" for="chatBroadcastToggle">Broadcast Mode</label>
@@ -181,19 +699,27 @@
                     </div>
                     <div class="card-body">
                         <div id="chatPeerSelector" class="mb-3" style="display: none;">
-                            <label for="chatPeerSelect" class="form-label">Select Peer</label>
+                            <label for="chatPeerSelect" class="form-label">Select Recipient</label>
                             <select class="form-select" id="chatPeerSelect">
                                 <option value="" disabled selected>Choose a peer...</option>
                             </select>
                         </div>
                         
-                        <div class="messages-container mb-3" id="messagesContainer" style="height: 300px; overflow-y: auto;">
-                            <div class="text-center text-muted my-5">No messages yet</div>
+                        <div class="message-container" id="messagesContainer">
+                            <div class="text-center text-muted my-5">
+                                <i class="fas fa-comment-slash mb-3" style="font-size: 2rem; opacity: 0.3;"></i>
+                                <p>No messages yet</p>
+                            </div>
                         </div>
                         
                         <div class="input-group">
+                            <span class="input-group-text bg-transparent border-0 text-light">
+                                <i class="fas fa-keyboard"></i>
+                            </span>
                             <input type="text" class="form-control" id="messageInput" placeholder="Type a message...">
-                            <button class="btn btn-primary" type="button" id="sendMessage">Send</button>
+                            <button class="btn btn-primary" type="button" id="sendMessage">
+                                <i class="fas fa-paper-plane me-2"></i>Send
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -203,36 +729,30 @@
             <div class="tab-pane fade" id="network-tab-pane" role="tabpanel" aria-labelledby="network-tab" tabindex="0">
                 <div class="card">
                     <div class="card-header">
-                        Mesh Network
+                        <i class="fas fa-network-wired me-2"></i>Mesh Network
                     </div>
                     <div class="card-body">
-                        <div class="row mb-4">
-                            <div class="col-4">
-                                <div class="card text-center">
-                                    <div class="card-body">
-                                        <i class="bi bi-people-fill mb-2" style="font-size: 2rem;"></i>
-                                        <h5 id="nodesCount">0</h5>
-                                        <div class="text-muted">Nodes</div>
-                                    </div>
+                        <div class="stats-container">
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-users"></i>
                                 </div>
+                                <div class="stat-value" id="nodesCount">0</div>
+                                <div class="stat-label">Nodes</div>
                             </div>
-                            <div class="col-4">
-                                <div class="card text-center">
-                                    <div class="card-body">
-                                        <i class="bi bi-activity mb-2" style="font-size: 2rem;"></i>
-                                        <h5 id="activeNodesCount">0</h5>
-                                        <div class="text-muted">Active</div>
-                                    </div>
+                            <div class="stat-card">
+                                <div class="stat-icon green">
+                                    <i class="fas fa-signal"></i>
                                 </div>
+                                <div class="stat-value" id="activeNodesCount">0</div>
+                                <div class="stat-label">Active</div>
                             </div>
-                            <div class="col-4">
-                                <div class="card text-center">
-                                    <div class="card-body">
-                                        <i class="bi bi-clock-fill mb-2" style="font-size: 2rem;"></i>
-                                        <h5>~90ms</h5>
-                                        <div class="text-muted">Latency</div>
-                                    </div>
+                            <div class="stat-card">
+                                <div class="stat-icon purple">
+                                    <i class="fas fa-clock"></i>
                                 </div>
+                                <div class="stat-value">~90ms</div>
+                                <div class="stat-label">Latency</div>
                             </div>
                         </div>
                         
@@ -240,28 +760,39 @@
                             <!-- Nodes will be added here dynamically -->
                         </div>
                         
-                        <div id="nodeDetails" class="mt-3" style="display: none;">
-                            <h5>Node Details</h5>
-                            <table class="table table-dark table-sm">
-                                <tbody>
-                                    <tr>
-                                        <th scope="row">ID</th>
-                                        <td id="detailNodeId"></td>
-                                    </tr>
-                                    <tr>
-                                        <th scope="row">Address</th>
-                                        <td id="detailNodeAddress"></td>
-                                    </tr>
-                                    <tr>
-                                        <th scope="row">Status</th>
-                                        <td id="detailNodeStatus"></td>
-                                    </tr>
-                                    <tr>
-                                        <th scope="row">Last Seen</th>
-                                        <td id="detailNodeLastSeen"></td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                        <div id="nodeDetails" class="node-details" style="display: none;">
+                            <div class="detail-header">
+                                <h5 class="detail-title">Node Details</h5>
+                                <button class="detail-close" id="closeDetails">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            
+                            <div class="detail-row">
+                                <div class="detail-label">ID</div>
+                                <div class="detail-value" id="detailNodeId"></div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">Address</div>
+                                <div class="detail-value" id="detailNodeAddress"></div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">Status</div>
+                                <div class="detail-value" id="detailNodeStatus"></div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">Last Seen</div>
+                                <div class="detail-value" id="detailNodeLastSeen"></div>
+                            </div>
+                            
+                            <div class="detail-actions">
+                                <button class="detail-action-btn" id="messageNodeBtn">
+                                    <i class="fas fa-comment me-2"></i>Message
+                                </button>
+                                <button class="detail-action-btn" id="callNodeBtn">
+                                    <i class="fas fa-phone-alt me-2"></i>Call
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -270,7 +801,7 @@
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <script>
         let nodeId = '';
         let peers = [];
@@ -295,6 +826,29 @@
         const detailNodeStatus = document.getElementById('detailNodeStatus');
         const detailNodeLastSeen = document.getElementById('detailNodeLastSeen');
         const recordButton = document.getElementById('record-button');
+        const closeDetails = document.getElementById('closeDetails');
+        const messageNodeBtn = document.getElementById('messageNodeBtn');
+        const callNodeBtn = document.getElementById('callNodeBtn');
+        
+        // Set up tab indicator
+        const updateTabIndicator = () => {
+            const activeTab = document.querySelector('.nav-link.active');
+            const navIndicator = document.querySelector('.nav-indicator');
+            if (activeTab && navIndicator) {
+                navIndicator.style.width = `${activeTab.offsetWidth}px`;
+                navIndicator.style.left = `${activeTab.offsetLeft}px`;
+            }
+        };
+        
+        // Initialize tab indicator
+        document.addEventListener('DOMContentLoaded', () => {
+            updateTabIndicator();
+            // Listen for tab changes
+            const tabEls = document.querySelectorAll('button[data-bs-toggle="tab"]');
+            tabEls.forEach(tab => {
+                tab.addEventListener('shown.bs.tab', updateTabIndicator);
+            });
+        });
         
         // Toggle broadcast mode
         broadcastToggle.addEventListener('change', function() {
@@ -303,6 +857,11 @@
         
         chatBroadcastToggle.addEventListener('change', function() {
             chatPeerSelector.style.display = this.checked ? 'none' : 'block';
+        });
+        
+        // Close node details
+        closeDetails.addEventListener('click', function() {
+            nodeDetails.style.display = 'none';
         });
         
         // Record button event
@@ -314,6 +873,7 @@
         
         function startRecording() {
             recordButton.classList.add('recording');
+            recordButton.classList.remove('pulse');
             // In a real implementation, this would start recording audio
             animateVisualizer(true);
         }
@@ -321,6 +881,7 @@
         function stopRecording() {
             if (recordButton.classList.contains('recording')) {
                 recordButton.classList.remove('recording');
+                recordButton.classList.add('pulse');
                 // In a real implementation, this would stop recording and send audio
                 animateVisualizer(false);
             }
@@ -384,13 +945,42 @@
             });
         }
         
+        // Message and call node actions
+        messageNodeBtn.addEventListener('click', function() {
+            const selectedNodeId = detailNodeId.textContent;
+            // Switch to chat tab
+            document.getElementById('chat-tab').click();
+            // Set direct message mode
+            chatBroadcastToggle.checked = false;
+            chatBroadcastToggle.dispatchEvent(new Event('change'));
+            // Select the peer
+            if (chatPeerSelect.querySelector(`option[value="${selectedNodeId}"]`)) {
+                chatPeerSelect.value = selectedNodeId;
+            }
+            // Focus on message input
+            setTimeout(() => messageInput.focus(), 300);
+        });
+        
+        callNodeBtn.addEventListener('click', function() {
+            const selectedNodeId = detailNodeId.textContent;
+            // Switch to talk tab
+            document.getElementById('talk-tab').click();
+            // Set direct call mode
+            broadcastToggle.checked = false;
+            broadcastToggle.dispatchEvent(new Event('change'));
+            // Select the peer
+            if (peerSelect.querySelector(`option[value="${selectedNodeId}"]`)) {
+                peerSelect.value = selectedNodeId;
+            }
+        });
+        
         // Fetch node info
         function fetchNodeInfo() {
             fetch('/api/node')
                 .then(response => response.json())
                 .then(data => {
                     nodeId = data.node_id;
-                    nodeInfoEl.textContent = `Node ID: ${nodeId.substring(0, 8)}...`;
+                    nodeInfoEl.innerHTML = `<i class="fas fa-fingerprint me-2"></i>Node ID: ${nodeId.substring(0, 8)}...`;
                 })
                 .catch(error => {
                     console.error('Error fetching node info:', error);
@@ -450,7 +1040,12 @@
         // Update messages display
         function updateMessagesDisplay(messages) {
             if (messages.length === 0) {
-                messagesContainer.innerHTML = '<div class="text-center text-muted my-5">No messages yet</div>';
+                messagesContainer.innerHTML = `
+                    <div class="text-center text-muted my-5">
+                        <i class="fas fa-comment-slash mb-3" style="font-size: 2rem; opacity: 0.3;"></i>
+                        <p>No messages yet</p>
+                    </div>
+                `;
                 return;
             }
             
@@ -468,11 +1063,12 @@
                 const timeDisplay = new Date(message.timestamp * 1000).toLocaleTimeString();
                 
                 messageEl.innerHTML = `
-                    <div class="message-header" style="font-size: 0.8rem; opacity: 0.8;">
+                    <div class="message-header">
                         ${senderDisplay} • ${timeDisplay}
                     </div>
-                    <div>${message.content}</div>
-                    ${message.recipient_id === 'broadcast' ? '<div style="font-size: 0.7rem; opacity: 0.7;">Broadcast</div>' : ''}
+                    <div class="message-content">${message.content}</div>
+                    ${message.recipient_id === 'broadcast' ? 
+                        '<div class="message-footer"><i class="fas fa-broadcast-tower me-1"></i>Broadcast</div>' : ''}
                 `;
                 
                 messagesContainer.appendChild(messageEl);
@@ -496,12 +1092,12 @@
             meshVisualization.appendChild(selfNode);
             
             // Add peer nodes in a circle around self
-            const radius = 100;
+            const radius = 120;
             const centerX = meshVisualization.clientWidth / 2;
             const centerY = meshVisualization.clientHeight / 2;
             
             peers.forEach((peer, index) => {
-                const angle = (index / peers.length) * 2 * Math.PI;
+                const angle = (index / (peers.length || 1)) * 2 * Math.PI;
                 const x = centerX + radius * Math.cos(angle);
                 const y = centerY + radius * Math.sin(angle);
                 
@@ -519,13 +1115,14 @@
                 const line = document.createElement('div');
                 line.style.position = 'absolute';
                 line.style.width = `${radius}px`;
-                line.style.height = '1px';
+                line.style.height = '2px';
                 line.style.backgroundColor = peer.is_active ? '#00E676' : '#444';
-                line.style.opacity = peer.is_active ? '0.8' : '0.3';
+                line.style.opacity = peer.is_active ? '0.6' : '0.2';
                 line.style.left = `${centerX}px`;
                 line.style.top = `${centerY}px`;
                 line.style.transformOrigin = 'left center';
                 line.style.transform = `rotate(${angle}rad)`;
+                line.style.zIndex = '1';
                 meshVisualization.appendChild(line);
             });
         }
@@ -542,7 +1139,12 @@
             nodeDetails.style.display = 'block';
             detailNodeId.textContent = peer.id;
             detailNodeAddress.textContent = peer.address;
-            detailNodeStatus.textContent = peer.is_active ? 'Active' : 'Inactive';
+            
+            const statusEl = document.createElement('span');
+            statusEl.className = `badge ${peer.is_active ? 'bg-success' : 'bg-secondary'}`;
+            statusEl.textContent = peer.is_active ? 'Active' : 'Inactive';
+            detailNodeStatus.innerHTML = '';
+            detailNodeStatus.appendChild(statusEl);
             
             const lastSeenDate = new Date(peer.last_seen * 1000);
             detailNodeLastSeen.textContent = lastSeenDate.toLocaleString();
