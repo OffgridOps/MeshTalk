@@ -1,0 +1,89 @@
+ AI Prompt: "Build MeshTalk – A Quantum-Resistant, AI-Powered Offline Mesh Communication System"
+Goal:
+Create a decentralized, offline-capable voice/text app that works over WiFi/Bluetooth mesh networks with military-grade encryption and AI noise cancellation.
+
+🔧 Technical Requirements:
+Core Protocol:
+
+Hybrid UDP (voice) + TCP (signaling)
+
+BATMAN-Adv routing for mesh networks (Linux kernel module)
+
+WebRTC modified for LAN-only use
+
+Security:
+
+CRYSTALS-Kyber (Post-quantum key exchange)
+
+XChaCha20-Poly1305 encryption (via Libsodium)
+
+Ephemeral IDs (no phone numbers/IP logging)
+
+AI Features:
+
+RNNoise for real-time background noise removal
+
+Vosk for offline voice commands ("Call John", "SOS")
+
+TinyML-based path optimization (predicts best node routes)
+
+Frontend:
+
+Flutter app (Android/iOS/Desktop)
+
+Walkie-talkie UI with push-to-talk
+
+Mesh map visualization (shows connected nodes)
+
+📁 Files to Generate:
+python
+# 1. Python Backend (UDP + AI)
+/server/mesh_relay.py          # BATMAN-Adv routing
+/server/crypto.py              # Kyber + XChaCha20  
+/server/ai_voice.py            # RNNoise integration
+
+# 2. Flutter Frontend
+/lib/ui/walkie_talkie.dart     # Push-to-talk UI
+/lib/services/mesh_routing.dart # P2P node management
+/lib/ai/speech_commands.dart   # Vosk integration
+
+# 3. Documentation
+/docs/protocol.md              # MeshTalk specs
+/docs/whitepaper.pdf           # For investors
+🎨 Design Specs:
+Logo: Hexagon mesh + soundwave (purple/green gradient)
+
+UI: Dark mode with neon node connections
+
+Font: Fira Code (monospace tech vibe)
+
+💰 Monetization Add-Ons:
+B2B API for militaries ($500K/license)
+
+Freemium app ($3/month for SOS beacon)
+
+White-label SDK for telecom companies
+
+⚠️ Constraints:
+Must work on Raspberry Pi (for mesh testing)
+
+Zero internet dependency
+
+<100ms voice latency
+
+📝 Output Format:
+Technical architecture diagram (Mermaid.js)
+
+Step-by-step Replit setup guide
+
+Flutter + Python starter code
+
+Investor pitch template
+
+Pro Tip: Add this line for better results:
+
+"Assume I have a team of 3 developers (Flutter/Python/AI). Prioritize a working MVP in 2 weeks."
+
+Paste this into your favorite AI and watch it generate ready-to-deploy code! 🚀
+
+Need tweaks? Want me to run this for you and share outputs? Let me know!
