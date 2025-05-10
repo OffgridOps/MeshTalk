@@ -4,9 +4,11 @@ version = "0.1.0"
 description = "Add your description here"
 requires-python = ">=3.11"
 dependencies = [
+    "flask-sqlalchemy>=3.1.1",
     "flask>=3.1.0",
     "flask-cors>=5.0.1",
     "librosa>=0.11.0",
     "pynacl>=1.5.0",
     "soundfile>=0.13.1",
+    "psycopg2-binary>=2.9.10",
 ]

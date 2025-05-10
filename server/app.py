@@ -21,6 +21,8 @@ from flask_cors import CORS
 from mesh_relay import MeshRelay
 from crypto import generate_keypair, encrypt_message, decrypt_message
 from ai_voice import process_audio_base64, process_voice_command
+import database
+from models import db
 
 # Configure logging
 logging.basicConfig(
@@ -33,11 +35,12 @@ logger = logging.getLogger("api_server")
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
+# Initialize the database
+app.config['SECRET_KEY'] = os.environ.get('FLASK_SECRET_KEY', 'meshtalk-dev-secret-key')
+database.init_db(app)
+
 # Initialize MeshRelay
 mesh_relay = MeshRelay()
-
-# In-memory message store (in a production app, this would use a database)
-messages: List[Dict[str, Any]] = []
 
 # Function to start mesh_relay
 def start_mesh_relay():
