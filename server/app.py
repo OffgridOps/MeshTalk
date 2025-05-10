@@ -51,12 +51,16 @@ def start_mesh_relay():
     import atexit
     atexit.register(lambda: mesh_relay.stop())
 
+# Create app context variable to track if mesh relay is started
+mesh_relay_started = False
+
 # Set up function to run before first request with modern Flask
 @app.before_request
 def before_first_request():
-    if not hasattr(app, 'mesh_relay_started'):
+    global mesh_relay_started
+    if not mesh_relay_started:
         start_mesh_relay()
-        app.mesh_relay_started = True
+        mesh_relay_started = True
 
 # Health check endpoint
 @app.route('/health', methods=['GET'])
@@ -93,6 +97,9 @@ def get_network_info():
 def send_message():
     try:
         data = request.json
+        if not data:
+            return jsonify({"error": "Invalid request data"}), 400
+            
         recipient_id = data.get('recipient_id', 'broadcast')
         content = data.get('content', '')
         
@@ -101,17 +108,19 @@ def send_message():
         
         # Create message
         message_id = str(uuid.uuid4())
+        timestamp = time.time()
         message = {
             "id": message_id,
             "sender_id": mesh_relay.node_id,
             "recipient_id": recipient_id,
             "content": content,
-            "timestamp": time.time(),
+            "timestamp": timestamp,
             "type": "text"
         }
         
-        # Store message locally
-        messages.append(message)
+        # Store message in database
+        from database import save_message
+        save_message(message)
         
         # Send message over mesh network
         mesh_relay.send_text_message(recipient_id, content)
@@ -127,23 +136,23 @@ def send_message():
 # Get received messages
 @app.route('/api/messages', methods=['GET'])
 def get_messages():
-    # Optional filters
-    since = float(request.args.get('since', 0))
-    limit = int(request.args.get('limit', 100))
-    
-    # Filter messages
-    filtered_messages = [
-        msg for msg in messages 
-        if msg['timestamp'] > since
-    ]
-    
-    # Sort by timestamp (newest first) and apply limit
-    sorted_messages = sorted(filtered_messages, key=lambda x: x['timestamp'], reverse=True)[:limit]
-    
-    return jsonify({
-        "messages": sorted_messages,
-        "total": len(sorted_messages)
-    })
+    try:
+        # Optional filters
+        since = float(request.args.get('since', 0) or 0)
+        limit = int(request.args.get('limit', 100) or 100)
+        message_type = request.args.get('type', None)
+        
+        # Get messages from database
+        from database import get_messages as db_get_messages
+        messages_list = db_get_messages(since, limit, message_type)
+        
+        return jsonify({
+            "messages": messages_list,
+            "total": len(messages_list)
+        })
+    except Exception as e:
+        logger.error(f"Error retrieving messages: {str(e)}")
+        return jsonify({"error": str(e), "messages": []}), 500
 
 # Process voice data
 @app.route('/api/voice/process', methods=['POST'])
@@ -168,6 +177,9 @@ def process_voice():
 def transmit_voice():
     try:
         data = request.json
+        if not data:
+            return jsonify({"error": "Invalid request data"}), 400
+            
         audio_base64 = data.get('audio')
         recipient_id = data.get('recipient_id', 'broadcast')
         
@@ -179,12 +191,37 @@ def transmit_voice():
         
         # Only transmit if speech is detected
         if processed_result.get('is_speech', False):
+            # Create message
+            message_id = str(uuid.uuid4())
+            timestamp = time.time()
+            
+            # Get audio data as bytes
+            processed_audio = processed_result['processed_audio']
+            audio_data = base64.b64decode(processed_audio)
+            
+            # Create message for database
+            message = {
+                "id": message_id,
+                "sender_id": mesh_relay.node_id,
+                "recipient_id": recipient_id,
+                "content": f"Voice message ({len(audio_data) // 1024} KB)",
+                "timestamp": timestamp,
+                "type": "voice",
+                "audio_data": audio_data,
+                "is_noise_reduced": True
+            }
+            
+            # Store message in database
+            from database import save_message
+            save_message(message)
+            
             # Send processed audio over mesh network
-            mesh_relay.send_voice_data(recipient_id, processed_result['processed_audio'])
+            mesh_relay.send_voice_data(recipient_id, processed_audio)
             
             return jsonify({
                 "success": True,
                 "transmitted": True,
+                "message_id": message_id,
                 "vad_confidence": processed_result.get('vad_confidence', 0)
             })
         else:

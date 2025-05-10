@@ -139,15 +139,14 @@ def save_message(message_data: Dict[str, Any]) -> Optional[Message]:
         sender_node = Node.query.filter_by(node_id=message_data['sender_id']).first()
         if not sender_node:
             # Create a placeholder sender node if it doesn't exist
-            sender_node = Node(
-                id=str(uuid.uuid4()),
-                node_id=message_data['sender_id'],
-                address='unknown',
-                port=8000,
-                public_key='',
-                last_seen=message_data.get('timestamp', datetime.datetime.utcnow().timestamp()),
-                is_active=True
-            )
+            sender_node = Node()
+            sender_node.id = str(uuid.uuid4())
+            sender_node.node_id = message_data['sender_id']
+            sender_node.address = 'unknown'
+            sender_node.port = 8000
+            sender_node.public_key = ''
+            sender_node.last_seen = message_data.get('timestamp', datetime.datetime.utcnow().timestamp())
+            sender_node.is_active = True
             db.session.add(sender_node)
         
         # Get recipient node for direct messages
@@ -158,29 +157,27 @@ def save_message(message_data: Dict[str, Any]) -> Optional[Message]:
                 recipient_node_id = recipient_node.id
         
         # Create new message
-        new_message = Message(
-            id=str(uuid.uuid4()),
-            message_id=message_data['id'],
-            sender_id=sender_node.id,
-            recipient_id=recipient_node_id,
-            content=message_data['content'],
-            timestamp=message_data['timestamp'],
-            type=message_data['type'],
-            ttl=message_data.get('ttl', 3),
-            is_processed=message_data.get('is_processed', False),
-            is_broadcast=message_data['recipient_id'] == 'broadcast'
-        )
+        new_message = Message()
+        new_message.id = str(uuid.uuid4())
+        new_message.message_id = message_data['id']
+        new_message.sender_id = sender_node.id
+        new_message.recipient_id = recipient_node_id
+        new_message.content = message_data['content']
+        new_message.timestamp = message_data['timestamp']
+        new_message.type = message_data['type']
+        new_message.ttl = message_data.get('ttl', 3)
+        new_message.is_processed = message_data.get('is_processed', False)
+        new_message.is_broadcast = message_data['recipient_id'] == 'broadcast'
         
         db.session.add(new_message)
         
         # If it's a voice message, save the audio data
         if message_data['type'] == 'voice' and 'audio_data' in message_data:
-            voice_message = VoiceMessage(
-                id=str(uuid.uuid4()),
-                message_id=new_message.id,
-                audio_data=message_data['audio_data'],
-                is_noise_reduced=message_data.get('is_noise_reduced', False)
-            )
+            voice_message = VoiceMessage()
+            voice_message.id = str(uuid.uuid4())
+            voice_message.message_id = new_message.id
+            voice_message.audio_data = message_data['audio_data']
+            voice_message.is_noise_reduced = message_data.get('is_noise_reduced', False)
             db.session.add(voice_message)
         
         db.session.commit()
@@ -234,17 +231,17 @@ def get_messages(since: float = 0, limit: int = 100, message_type: str = None) -
 
 # Network statistics operations
 def save_network_stats(active_nodes: int, messages_transmitted: int, 
-                      avg_latency: float = None, batman_active: bool = False) -> bool:
+                      avg_latency: float = 0.0, batman_active: bool = False) -> bool:
     """Save network statistics"""
     try:
-        stats = NetworkStat(
-            id=str(uuid.uuid4()),
-            timestamp=datetime.datetime.utcnow().timestamp(),
-            active_nodes=active_nodes,
-            messages_transmitted=messages_transmitted,
-            avg_latency=avg_latency,
-            batman_active=batman_active
-        )
+        stats = NetworkStat()
+        stats.id = str(uuid.uuid4())
+        stats.timestamp = datetime.datetime.utcnow().timestamp()
+        stats.active_nodes = active_nodes
+        stats.messages_transmitted = messages_transmitted
+        stats.avg_latency = avg_latency
+        stats.batman_active = batman_active
+        
         db.session.add(stats)
         db.session.commit()
         return True
@@ -270,7 +267,10 @@ def save_preference(key: str, value: str) -> bool:
         if pref:
             pref.value = value
         else:
-            pref = UserPreference(id=str(uuid.uuid4()), key=key, value=value)
+            pref = UserPreference()
+            pref.id = str(uuid.uuid4())
+            pref.key = key
+            pref.value = value
             db.session.add(pref)
         
         db.session.commit()
@@ -280,11 +280,11 @@ def save_preference(key: str, value: str) -> bool:
         logger.error(f"Error saving preference: {str(e)}")
         return False
 
-def get_preference(key: str, default: str = None) -> str:
+def get_preference(key: str, default: str = "") -> str:
     """Get a user preference"""
     try:
         pref = UserPreference.query.filter_by(key=key).first()
-        if pref:
+        if pref and pref.value is not None:
             return pref.value
         return default
     except Exception as e:
