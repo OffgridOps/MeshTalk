@@ -1,0 +1,33 @@
+modules = ["python-3.11"]
+
+[nix]
+channel = "stable-24_05"
+packages = ["ffmpeg-full", "libsndfile", "libsodium"]
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "MeshTalk Server"
+
+[[workflows.workflow]]
+name = "MeshTalk Server"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd server && pip install flask flask-cors pynacl && python app.py"
+waitForPort = 8000
+
+[deployment]
+run = ["sh", "-c", "cd server && pip install flask flask-cors pynacl && python app.py"]
+
+[[ports]]
+localPort = 8000
+externalPort = 80
