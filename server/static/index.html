@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MeshTalk Web Interface</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: 'Fira Code', monospace;
+        }
+        .card {
+            background-color: #1F1F1F;
+            border-color: #333;
+            margin-bottom: 20px;
+        }
+        .card-header {
+            background-color: #333;
+            border-bottom: 1px solid #444;
+        }
+        .btn-primary {
+            background-color: #6200EA;
+            border-color: #6200EA;
+        }
+        .btn-success {
+            background-color: #00E676;
+            border-color: #00E676;
+        }
+        .message-bubble {
+            padding: 10px 15px;
+            border-radius: 20px;
+            margin-bottom: 10px;
+            max-width: 80%;
+        }
+        .message-sent {
+            background-color: #6200EA;
+            margin-left: auto;
+        }
+        .message-received {
+            background-color: #333;
+        }
+        .mesh-node {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #6200EA;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 5px;
+            box-shadow: 0 0 10px rgba(98, 0, 234, 0.5);
+            font-weight: bold;
+        }
+        .mesh-node.active {
+            background-color: #00E676;
+            box-shadow: 0 0 10px rgba(0, 230, 118, 0.5);
+        }
+        .mesh-node.self {
+            border: 3px solid white;
+        }
+        .mesh-container {
+            position: relative;
+            height: 300px;
+            background-color: #121212;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #333;
+        }
+        .node-info {
+            font-size: 12px;
+            color: #aaa;
+            margin-top: 20px;
+        }
+        #record-button {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-color: #6200EA;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        #record-button.recording {
+            background-color: #00E676;
+            transform: scale(0.95);
+        }
+        .visualizer {
+            height: 60px;
+            margin: 10px 0;
+        }
+        .visualizer-bar {
+            width: 5px;
+            background-color: #6200EA;
+            margin: 0 2px;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-4">
+        <h1 class="mb-4">MeshTalk</h1>
+        <p class="text-muted">A Quantum-Resistant, AI-Powered Offline Mesh Communication System</p>
+        
+        <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="talk-tab" data-bs-toggle="tab" data-bs-target="#talk-tab-pane" type="button" role="tab" aria-controls="talk-tab-pane" aria-selected="true">Talk</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="chat-tab" data-bs-toggle="tab" data-bs-target="#chat-tab-pane" type="button" role="tab" aria-controls="chat-tab-pane" aria-selected="false">Chat</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="network-tab" data-bs-toggle="tab" data-bs-target="#network-tab-pane" type="button" role="tab" aria-controls="network-tab-pane" aria-selected="false">Network</button>
+            </li>
+        </ul>
+        
+        <div class="tab-content" id="myTabContent">
+            <!-- Walkie Talkie Tab -->
+            <div class="tab-pane fade show active" id="talk-tab-pane" role="tabpanel" aria-labelledby="talk-tab" tabindex="0">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <div>Voice Communication</div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="broadcastToggle" checked>
+                            <label class="form-check-label" for="broadcastToggle">Broadcast Mode</label>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="peerSelector" class="mb-3" style="display: none;">
+                            <label for="peerSelect" class="form-label">Select Peer</label>
+                            <select class="form-select" id="peerSelect">
+                                <option value="" disabled selected>Choose a peer...</option>
+                            </select>
+                        </div>
+                        
+                        <div class="visualizer text-center">
+                            <div class="visualizer-bar" style="height: 10%;"></div>
+                            <div class="visualizer-bar" style="height: 20%;"></div>
+                            <div class="visualizer-bar" style="height: 15%;"></div>
+                            <div class="visualizer-bar" style="height: 30%;"></div>
+                            <div class="visualizer-bar" style="height: 20%;"></div>
+                            <div class="visualizer-bar" style="height: 40%;"></div>
+                            <div class="visualizer-bar" style="height: 25%;"></div>
+                            <div class="visualizer-bar" style="height: 15%;"></div>
+                            <div class="visualizer-bar" style="height: 10%;"></div>
+                            <div class="visualizer-bar" style="height: 5%;"></div>
+                            <div class="visualizer-bar" style="height: 15%;"></div>
+                            <div class="visualizer-bar" style="height: 25%;"></div>
+                            <div class="visualizer-bar" style="height: 20%;"></div>
+                            <div class="visualizer-bar" style="height: 10%;"></div>
+                            <div class="visualizer-bar" style="height: 5%;"></div>
+                        </div>
+                        
+                        <div id="record-button" class="mb-3">
+                            <i class="bi bi-mic-fill" style="font-size: 2rem;"></i>
+                        </div>
+                        
+                        <div class="text-center text-muted">Press and hold to talk</div>
+                        
+                        <div class="node-info text-center" id="nodeInfo">
+                            Node ID: Loading...
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Chat Tab -->
+            <div class="tab-pane fade" id="chat-tab-pane" role="tabpanel" aria-labelledby="chat-tab" tabindex="0">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <div>Text Messages</div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="chatBroadcastToggle" checked>
+                            <label class="form-check-label" for="chatBroadcastToggle">Broadcast Mode</label>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="chatPeerSelector" class="mb-3" style="display: none;">
+                            <label for="chatPeerSelect" class="form-label">Select Peer</label>
+                            <select class="form-select" id="chatPeerSelect">
+                                <option value="" disabled selected>Choose a peer...</option>
+                            </select>
+                        </div>
+                        
+                        <div class="messages-container mb-3" id="messagesContainer" style="height: 300px; overflow-y: auto;">
+                            <div class="text-center text-muted my-5">No messages yet</div>
+                        </div>
+                        
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="messageInput" placeholder="Type a message...">
+                            <button class="btn btn-primary" type="button" id="sendMessage">Send</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Network Tab -->
+            <div class="tab-pane fade" id="network-tab-pane" role="tabpanel" aria-labelledby="network-tab" tabindex="0">
+                <div class="card">
+                    <div class="card-header">
+                        Mesh Network
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-4">
+                            <div class="col-4">
+                                <div class="card text-center">
+                                    <div class="card-body">
+                                        <i class="bi bi-people-fill mb-2" style="font-size: 2rem;"></i>
+                                        <h5 id="nodesCount">0</h5>
+                                        <div class="text-muted">Nodes</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="card text-center">
+                                    <div class="card-body">
+                                        <i class="bi bi-activity mb-2" style="font-size: 2rem;"></i>
+                                        <h5 id="activeNodesCount">0</h5>
+                                        <div class="text-muted">Active</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="card text-center">
+                                    <div class="card-body">
+                                        <i class="bi bi-clock-fill mb-2" style="font-size: 2rem;"></i>
+                                        <h5>~90ms</h5>
+                                        <div class="text-muted">Latency</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mesh-container" id="meshVisualization">
+                            <!-- Nodes will be added here dynamically -->
+                        </div>
+                        
+                        <div id="nodeDetails" class="mt-3" style="display: none;">
+                            <h5>Node Details</h5>
+                            <table class="table table-dark table-sm">
+                                <tbody>
+                                    <tr>
+                                        <th scope="row">ID</th>
+                                        <td id="detailNodeId"></td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Address</th>
+                                        <td id="detailNodeAddress"></td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Status</th>
+                                        <td id="detailNodeStatus"></td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Last Seen</th>
+                                        <td id="detailNodeLastSeen"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css"></script>
+    <script>
+        let nodeId = '';
+        let peers = [];
+        
+        // DOM Elements
+        const nodeInfoEl = document.getElementById('nodeInfo');
+        const broadcastToggle = document.getElementById('broadcastToggle');
+        const peerSelector = document.getElementById('peerSelector');
+        const peerSelect = document.getElementById('peerSelect');
+        const chatBroadcastToggle = document.getElementById('chatBroadcastToggle');
+        const chatPeerSelector = document.getElementById('chatPeerSelector');
+        const chatPeerSelect = document.getElementById('chatPeerSelect');
+        const messagesContainer = document.getElementById('messagesContainer');
+        const messageInput = document.getElementById('messageInput');
+        const sendMessageBtn = document.getElementById('sendMessage');
+        const meshVisualization = document.getElementById('meshVisualization');
+        const nodesCount = document.getElementById('nodesCount');
+        const activeNodesCount = document.getElementById('activeNodesCount');
+        const nodeDetails = document.getElementById('nodeDetails');
+        const detailNodeId = document.getElementById('detailNodeId');
+        const detailNodeAddress = document.getElementById('detailNodeAddress');
+        const detailNodeStatus = document.getElementById('detailNodeStatus');
+        const detailNodeLastSeen = document.getElementById('detailNodeLastSeen');
+        const recordButton = document.getElementById('record-button');
+        
+        // Toggle broadcast mode
+        broadcastToggle.addEventListener('change', function() {
+            peerSelector.style.display = this.checked ? 'none' : 'block';
+        });
+        
+        chatBroadcastToggle.addEventListener('change', function() {
+            chatPeerSelector.style.display = this.checked ? 'none' : 'block';
+        });
+        
+        // Record button event
+        recordButton.addEventListener('mousedown', startRecording);
+        recordButton.addEventListener('mouseup', stopRecording);
+        recordButton.addEventListener('mouseleave', stopRecording);
+        recordButton.addEventListener('touchstart', startRecording);
+        recordButton.addEventListener('touchend', stopRecording);
+        
+        function startRecording() {
+            recordButton.classList.add('recording');
+            // In a real implementation, this would start recording audio
+            animateVisualizer(true);
+        }
+        
+        function stopRecording() {
+            if (recordButton.classList.contains('recording')) {
+                recordButton.classList.remove('recording');
+                // In a real implementation, this would stop recording and send audio
+                animateVisualizer(false);
+            }
+        }
+        
+        function animateVisualizer(active) {
+            const bars = document.querySelectorAll('.visualizer-bar');
+            
+            if (active) {
+                bars.forEach(bar => {
+                    animateBar(bar);
+                });
+            } else {
+                bars.forEach(bar => {
+                    bar.style.height = '10%';
+                });
+            }
+        }
+        
+        function animateBar(bar) {
+            if (!recordButton.classList.contains('recording')) return;
+            
+            const height = Math.floor(Math.random() * 70) + 10 + '%';
+            bar.style.height = height;
+            setTimeout(() => animateBar(bar), 100);
+        }
+        
+        // Send message
+        sendMessageBtn.addEventListener('click', sendMessage);
+        messageInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message) return;
+            
+            const recipientId = chatBroadcastToggle.checked ? 'broadcast' : chatPeerSelect.value;
+            
+            fetch('/api/messages', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    recipient_id: recipientId,
+                    content: message
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    messageInput.value = '';
+                    fetchMessages();
+                }
+            })
+            .catch(error => {
+                console.error('Error sending message:', error);
+            });
+        }
+        
+        // Fetch node info
+        function fetchNodeInfo() {
+            fetch('/api/node')
+                .then(response => response.json())
+                .then(data => {
+                    nodeId = data.node_id;
+                    nodeInfoEl.textContent = `Node ID: ${nodeId.substring(0, 8)}...`;
+                })
+                .catch(error => {
+                    console.error('Error fetching node info:', error);
+                });
+        }
+        
+        // Fetch network info and peers
+        function fetchNetworkInfo() {
+            fetch('/api/network')
+                .then(response => response.json())
+                .then(data => {
+                    peers = data.nodes;
+                    updatePeerSelectors();
+                    updateNetworkVisualization();
+                    
+                    nodesCount.textContent = peers.length + 1; // Include self
+                    activeNodesCount.textContent = peers.filter(p => p.is_active).length + 1;
+                })
+                .catch(error => {
+                    console.error('Error fetching network info:', error);
+                });
+        }
+        
+        // Fetch messages
+        function fetchMessages() {
+            fetch('/api/messages')
+                .then(response => response.json())
+                .then(data => {
+                    updateMessagesDisplay(data.messages);
+                })
+                .catch(error => {
+                    console.error('Error fetching messages:', error);
+                });
+        }
+        
+        // Update peer selectors
+        function updatePeerSelectors() {
+            // Clear existing options
+            peerSelect.innerHTML = '<option value="" disabled selected>Choose a peer...</option>';
+            chatPeerSelect.innerHTML = '<option value="" disabled selected>Choose a peer...</option>';
+            
+            // Add options for each peer
+            peers.forEach(peer => {
+                if (peer.is_active) {
+                    const option = document.createElement('option');
+                    option.value = peer.id;
+                    option.textContent = `${peer.id.substring(0, 8)}...`;
+                    
+                    const chatOption = option.cloneNode(true);
+                    
+                    peerSelect.appendChild(option);
+                    chatPeerSelect.appendChild(chatOption);
+                }
+            });
+        }
+        
+        // Update messages display
+        function updateMessagesDisplay(messages) {
+            if (messages.length === 0) {
+                messagesContainer.innerHTML = '<div class="text-center text-muted my-5">No messages yet</div>';
+                return;
+            }
+            
+            messagesContainer.innerHTML = '';
+            
+            // Sort messages by timestamp (oldest first)
+            messages.sort((a, b) => a.timestamp - b.timestamp);
+            
+            messages.forEach(message => {
+                const isCurrentUser = message.sender_id === nodeId;
+                const messageEl = document.createElement('div');
+                messageEl.className = `message-bubble ${isCurrentUser ? 'message-sent' : 'message-received'}`;
+                
+                const senderDisplay = isCurrentUser ? 'You' : message.sender_id.substring(0, 8) + '...';
+                const timeDisplay = new Date(message.timestamp * 1000).toLocaleTimeString();
+                
+                messageEl.innerHTML = `
+                    <div class="message-header" style="font-size: 0.8rem; opacity: 0.8;">
+                        ${senderDisplay} • ${timeDisplay}
+                    </div>
+                    <div>${message.content}</div>
+                    ${message.recipient_id === 'broadcast' ? '<div style="font-size: 0.7rem; opacity: 0.7;">Broadcast</div>' : ''}
+                `;
+                
+                messagesContainer.appendChild(messageEl);
+            });
+            
+            // Scroll to bottom
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        // Update network visualization
+        function updateNetworkVisualization() {
+            meshVisualization.innerHTML = '';
+            
+            // Add self node
+            const selfNode = createNodeElement(nodeId, true);
+            selfNode.classList.add('self');
+            selfNode.style.position = 'absolute';
+            selfNode.style.left = '50%';
+            selfNode.style.top = '50%';
+            selfNode.style.transform = 'translate(-50%, -50%)';
+            meshVisualization.appendChild(selfNode);
+            
+            // Add peer nodes in a circle around self
+            const radius = 100;
+            const centerX = meshVisualization.clientWidth / 2;
+            const centerY = meshVisualization.clientHeight / 2;
+            
+            peers.forEach((peer, index) => {
+                const angle = (index / peers.length) * 2 * Math.PI;
+                const x = centerX + radius * Math.cos(angle);
+                const y = centerY + radius * Math.sin(angle);
+                
+                const peerNode = createNodeElement(peer.id, peer.is_active);
+                peerNode.style.position = 'absolute';
+                peerNode.style.left = `${x}px`;
+                peerNode.style.top = `${y}px`;
+                peerNode.style.transform = 'translate(-50%, -50%)';
+                
+                peerNode.addEventListener('click', () => showNodeDetails(peer));
+                
+                meshVisualization.appendChild(peerNode);
+                
+                // Add connection line
+                const line = document.createElement('div');
+                line.style.position = 'absolute';
+                line.style.width = `${radius}px`;
+                line.style.height = '1px';
+                line.style.backgroundColor = peer.is_active ? '#00E676' : '#444';
+                line.style.opacity = peer.is_active ? '0.8' : '0.3';
+                line.style.left = `${centerX}px`;
+                line.style.top = `${centerY}px`;
+                line.style.transformOrigin = 'left center';
+                line.style.transform = `rotate(${angle}rad)`;
+                meshVisualization.appendChild(line);
+            });
+        }
+        
+        function createNodeElement(id, isActive) {
+            const node = document.createElement('div');
+            node.className = `mesh-node ${isActive ? 'active' : ''}`;
+            node.textContent = id.substring(0, 2);
+            
+            return node;
+        }
+        
+        function showNodeDetails(peer) {
+            nodeDetails.style.display = 'block';
+            detailNodeId.textContent = peer.id;
+            detailNodeAddress.textContent = peer.address;
+            detailNodeStatus.textContent = peer.is_active ? 'Active' : 'Inactive';
+            
+            const lastSeenDate = new Date(peer.last_seen * 1000);
+            detailNodeLastSeen.textContent = lastSeenDate.toLocaleString();
+        }
+        
+        // Auto-refresh data
+        function refreshData() {
+            fetchNodeInfo();
+            fetchNetworkInfo();
+            fetchMessages();
+        }
+        
+        // Initial data fetch
+        refreshData();
+        
+        // Refresh data every 5 seconds
+        setInterval(refreshData, 5000);
+    </script>
+</body>
+</html>
