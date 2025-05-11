@@ -16,6 +16,7 @@ import threading
 
 from flask import Flask, request, jsonify, Response, render_template, send_from_directory
 from flask_cors import CORS
+from flask_jwt_extended import get_jwt_identity, get_jwt, jwt_required
 
 # Import MeshTalk modules
 from mesh_relay import MeshRelay
@@ -23,6 +24,7 @@ from crypto import generate_keypair, encrypt_message, decrypt_message
 from ai_voice import process_audio_base64, process_voice_command
 import database
 from models import db
+import auth
 
 # Configure logging
 logging.basicConfig(
@@ -41,6 +43,12 @@ database.init_db(app)
 
 # Initialize MeshRelay
 mesh_relay = MeshRelay()
+
+# Store the node ID in the app config for authentication
+app.config["NODE_ID"] = mesh_relay.node_id
+
+# Initialize authentication
+auth.init_auth(app)
 
 # Function to start mesh_relay
 def start_mesh_relay():
@@ -252,8 +260,169 @@ def handle_voice_command():
         logger.error(f"Error processing command: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
+# Authentication endpoints
+@app.route('/api/auth/login', methods=['POST'])
+@auth.rate_limit
+def login():
+    """Authenticate user and generate tokens"""
+    try:
+        data = request.json
+        if not data:
+            return jsonify({"error": "Invalid request data"}), 400
+            
+        username = data.get('username')
+        password = data.get('password')
+        
+        if not username or not password:
+            return jsonify({"error": "Username and password required"}), 400
+        
+        # Authenticate user
+        success, user_data = auth.authenticate_user(username, password)
+        
+        if not success:
+            return jsonify({
+                "status": "error",
+                "error": "invalid_credentials",
+                "message": "Invalid username or password"
+            }), 401
+        
+        # Generate tokens
+        tokens = auth.generate_tokens(user_data)
+        
+        return jsonify({
+            "status": "success",
+            "user": {
+                "username": user_data.get("username"),
+                "role": user_data.get("role")
+            },
+            **tokens
+        })
+    except Exception as e:
+        logger.error(f"Error in login: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/auth/refresh', methods=['POST'])
+@auth.rate_limit
+def refresh_token():
+    """Refresh access token using refresh token"""
+    try:
+        data = request.json
+        if not data:
+            return jsonify({"error": "Invalid request data"}), 400
+            
+        refresh_token = data.get('refresh_token')
+        
+        if not refresh_token:
+            return jsonify({"error": "Refresh token required"}), 400
+        
+        # Refresh token
+        success, result = auth.refresh_access_token(refresh_token)
+        
+        if not success:
+            return jsonify({
+                "status": "error",
+                "error": "invalid_token",
+                "message": "Invalid or expired refresh token"
+            }), 401
+        
+        return jsonify({
+            "status": "success",
+            **result
+        })
+    except Exception as e:
+        logger.error(f"Error in refresh token: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/auth/logout', methods=['POST'])
+@auth.require_auth
+def logout():
+    """Logout user by blacklisting current token"""
+    try:
+        # Get current token JTI (JWT ID)
+        token_jti = get_jwt().get("jti")
+        
+        # Add token to blacklist
+        success = auth.logout_user(token_jti)
+        
+        if success:
+            return jsonify({
+                "status": "success",
+                "message": "Successfully logged out"
+            })
+        else:
+            return jsonify({
+                "status": "error",
+                "error": "logout_failed",
+                "message": "Failed to logout"
+            }), 500
+    except Exception as e:
+        logger.error(f"Error in logout: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/auth/apikey', methods=['GET'])
+@auth.require_auth
+def get_api_key():
+    """Get current API key"""
+    try:
+        # Only admin users or self-nodes can see the API key
+        current_user = get_jwt_identity()
+        user_role = get_jwt().get("role", "")
+        
+        if user_role != "admin" and current_user != mesh_relay.node_id:
+            return jsonify({
+                "status": "error",
+                "error": "unauthorized",
+                "message": "You are not authorized to view the API key"
+            }), 403
+        
+        # Get API key
+        api_key = auth.get_api_key()
+        
+        return jsonify({
+            "status": "success",
+            "api_key": api_key
+        })
+    except Exception as e:
+        logger.error(f"Error getting API key: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/auth/apikey/rotate', methods=['POST'])
+@auth.require_auth
+def rotate_api_key():
+    """Rotate API key"""
+    try:
+        # Only admin users can rotate the API key
+        user_role = get_jwt().get("role", "")
+        
+        if user_role != "admin":
+            return jsonify({
+                "status": "error",
+                "error": "unauthorized",
+                "message": "You are not authorized to rotate the API key"
+            }), 403
+        
+        # Rotate API key
+        new_api_key = auth.rotate_api_key()
+        
+        if new_api_key:
+            return jsonify({
+                "status": "success",
+                "message": "API key rotated successfully",
+                "api_key": new_api_key
+            })
+        else:
+            return jsonify({
+                "status": "error",
+                "error": "rotation_failed",
+                "message": "Failed to rotate API key"
+            }), 500
+    except Exception as e:
+        logger.error(f"Error rotating API key: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
 # Database status API endpoint
 @app.route('/api/db/status', methods=['GET'])
+@auth.require_auth
 def db_status():
     try:
         from database import get_nodes, get_messages, get_network_stats, get_all_preferences
