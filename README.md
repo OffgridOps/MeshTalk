@@ -164,15 +164,3 @@ Let’s build resilient communication for everyone, everywhere. 🌍🔒
 
 ---
 
-## 📎 Extras (Want More?)
-
-Let me know if you'd like:
-
-* 📄 A full `protocol.md` spec
-* 📑 A whitepaper template for investors
-* 🍓 Setup guide for Raspberry Pi mesh cluster
-
-```
-
----
-
