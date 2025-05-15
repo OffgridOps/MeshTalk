@@ -1,3 +1,4 @@
+![freepik__the-style-is-candid-image-photography-with-natural__32675](https://github.com/user-attachments/assets/c953bef2-0958-40b7-b125-9a6f1d8197ea)
 
 ````markdown
 # MeshTalk 🚀🔐📡
